@@ -15,6 +15,19 @@ enum class TokenType {
     LEFT_BRACE,
     RIGHT_BRACE,
 
+    // Operators
+    EQUAL,
+    BANG,
+    GREATER,
+    LESS,
+
+    // Multi-character tokens
+    EQUAL_EQUAL,
+    BANG_EQUAL,
+    GREATER_EQUAL,
+    LESS_EQUAL,
+    ARROW,
+
     // Keywords
     EOF,
 }
