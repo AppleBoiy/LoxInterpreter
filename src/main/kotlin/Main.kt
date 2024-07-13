@@ -1,4 +1,5 @@
 import java.io.File
+import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
     if (args.size != 2) {
@@ -14,7 +15,14 @@ fun main(args: Array<String>) {
             val source = File(filename).readText()
             val lexer = Lexer(source)
             val tokens = lexer.getTokens()
+            val hasError = lexer.hasError()
             tokens.forEach { println(it) }
+
+            if (hasError) {
+                exitProcess(65)
+            } else {
+                exitProcess(0)
+            }
         }
 
         else -> {

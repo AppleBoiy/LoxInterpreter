@@ -1,15 +1,15 @@
 class Lexer(private val source: String) {
     private val tokens: MutableList<Token> = mutableListOf()
     private var currentIndex: Int = 0
+    private var currentLine: Int = 1
+    private var currentColumn: Int = 1
+    private var errorOccurred: Boolean = false
 
     private val tokenMap = mapOf(
-        // Parentheses and braces
         '(' to TokenType.LEFT_PAREN,
         ')' to TokenType.RIGHT_PAREN,
         '{' to TokenType.LEFT_BRACE,
         '}' to TokenType.RIGHT_BRACE,
-
-        // Single-character tokens
         '*' to TokenType.STAR,
         '.' to TokenType.DOT,
         ',' to TokenType.COMMA,
@@ -22,29 +22,52 @@ class Lexer(private val source: String) {
 
     init {
         tokenize()
-        tokens.add(Token(TokenType.EOF, ""))
+        tokens.add(Token(TokenType.EOF, "", currentLine, currentColumn))
     }
 
     private fun tokenize() {
         while (currentIndex < source.length) {
             val currentChar = source[currentIndex]
-            if (currentChar.isWhitespace()) {
-                currentIndex++
-                continue
-            }
+            when {
+                currentChar == '\n' -> {
+                    currentLine++
+                    currentColumn = 1
+                    currentIndex++
+                }
 
-            tokenMap[currentChar]?.let {
-                tokens.add(createToken(it, currentChar))
+                currentChar.isWhitespace() -> {
+                    currentIndex++
+                    currentColumn++
+                }
+
+                tokenMap.containsKey(currentChar) -> {
+                    val tokenType = tokenMap[currentChar]!!
+                    val token = Token(tokenType, currentChar.toString(), currentLine, currentColumn)
+                    tokens.add(token)
+                    currentIndex++
+                    currentColumn++
+                }
+
+                else -> {
+                    reportError(currentChar)
+                }
             }
-            currentIndex++
         }
     }
 
-    private fun createToken(type: TokenType, char: Char): Token {
-        return Token(type, char.toString())
+
+    private fun reportError(currentChar: Char) {
+        System.err.println("[line $currentLine] Error: Unexpected character: $currentChar")
+        errorOccurred = true
+        currentIndex++
+        currentColumn++
     }
 
     fun getTokens(): List<Token> {
         return tokens
+    }
+
+    fun hasError(): Boolean {
+        return errorOccurred
     }
 }
