@@ -1,6 +1,3 @@
-import java.io.File
-import kotlin.system.exitProcess
-
 class Lexer(private val source: String) {
     private val tokens: MutableList<Token> = mutableListOf()
     private var currentIndex: Int = 0
@@ -63,6 +60,10 @@ class Lexer(private val source: String) {
                     tokenizeString()
                 }
 
+                currentChar.isDigit() -> {
+                    tokenizeNumber()
+                }
+
                 isStartOfMultiCharToken(currentChar) -> {
                     tokenizeMultiCharToken()
                 }
@@ -78,6 +79,32 @@ class Lexer(private val source: String) {
                     reportError(currentChar)
                 }
             }
+        }
+    }
+
+    private fun tokenizeNumber() {
+        val start = currentIndex
+        consumeDigits()
+
+        // if there is a decimal point
+        if (currentIndex < source.length && source[currentIndex] == '.') {
+            // if there is a digit after the decimal point
+            if (currentIndex + 1 < source.length && source[currentIndex + 1].isDigit()) {
+                currentIndex++
+                currentColumn++
+                consumeDigits()
+            }
+        }
+
+        val number = source.substring(start, currentIndex)
+        tokens.add(Token(TokenType.NUMBER, number, currentLine, currentColumn))
+    }
+
+
+    private fun consumeDigits() {
+        while (currentIndex < source.length && source[currentIndex].isDigit()) {
+            currentIndex++
+            currentColumn++
         }
     }
 
@@ -170,38 +197,5 @@ class Lexer(private val source: String) {
 
     fun hasError(): Boolean {
         return errorOccurred
-    }
-}
-
-fun main(args: Array<String>) {
-    if (args.size != 2) {
-        println("Usage: ${args[0]} <source_file>")
-        exitProcess(1)
-    }
-
-    val command = args[0]
-    val filename = args[1]
-
-    if (command != "tokenize") {
-        println("Unknown command: $command")
-        exitProcess(1)
-    }
-
-    val source = File(filename).readText()
-    val lexer = Lexer(source)
-    val tokens = lexer.getTokens()
-    val hasError = lexer.hasError()
-
-    tokens.forEach {
-        when {
-            it.value != null -> println("${it.type} ${it.value} ${it.value}")
-            else -> println("${it.type} null null")
-        }
-    }
-
-    if (hasError) {
-        exitProcess(65)
-    } else {
-        exitProcess(0)
     }
 }
