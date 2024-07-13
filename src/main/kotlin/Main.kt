@@ -14,16 +14,16 @@ fun main(args: Array<String>) {
     val filename = args[1]
 
     if (command != "tokenize") {
-        System.err.println("Unknown command: ${command}")
+        System.err.println("Unknown command: $command")
         exitProcess(1)
     }
 
     val fileContents = File(filename).readText()
 
     // Uncomment this block to pass the first stage
-    // if (fileContents.isNotEmpty()) {
-    //     throw NotImplementedError("Scanner not implemented")
-    // } else {
-    //     println("EOF  null") // Placeholder, remove this line when implementing the scanner
-    // }
+    if (fileContents.isNotEmpty()) {
+        throw NotImplementedError("Scanner not implemented")
+    } else {
+        println("EOF  null") // Placeholder, remove this line when implementing the scanner
+    }
 }
