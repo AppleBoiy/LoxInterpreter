@@ -1,41 +1,20 @@
 enum class TokenType {
-    // Single-character tokens
-    STAR,
-    DOT,
-    COMMA,
-    PLUS,
-    MINUS,
-    SLASH,
-    SEMICOLON,
-    COLON,
-
-    // Parentheses and braces
-    LEFT_PAREN,
-    RIGHT_PAREN,
-    LEFT_BRACE,
-    RIGHT_BRACE,
-
-    // Operators
-    EQUAL,
-    BANG,
-    GREATER,
-    LESS,
+    // Single character tokens
+    LEFT_PAREN, RIGHT_PAREN, LEFT_BRACE, RIGHT_BRACE,
+    STAR, DOT, COMMA, PLUS, MINUS, SLASH, SEMICOLON,
+    COLON, EQUAL, BANG, GREATER, LESS,
 
     // Multi-character tokens
-    EQUAL_EQUAL,
-    BANG_EQUAL,
-    GREATER_EQUAL,
-    LESS_EQUAL,
+    EQUAL_EQUAL, BANG_EQUAL, GREATER_EQUAL, LESS_EQUAL,
     COMMENT,
 
     // Literals
-    STRING,
-
-    // Numbers
-    NUMBER,
+    STRING, NUMBER, IDENTIFIER,
 
     // Keywords
-    EOF,
+    AND, CLASS, ELSE, FALSE, FOR, FUN, IF, NIL, OR, PRINT, RETURN,
+    SUPER, THIS, TRUE, VAR, WHILE,
 
-    IDENTIFIER
+    // End of file
+    EOF
 }

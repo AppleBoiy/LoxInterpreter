@@ -5,6 +5,25 @@ class Lexer(private val source: String) {
     private var currentColumn: Int = 1
     private var errorOccurred: Boolean = false
 
+    private val keywords = mapOf(
+        "and" to TokenType.AND,
+        "class" to TokenType.CLASS,
+        "else" to TokenType.ELSE,
+        "false" to TokenType.FALSE,
+        "for" to TokenType.FOR,
+        "fun" to TokenType.FUN,
+        "if" to TokenType.IF,
+        "nil" to TokenType.NIL,
+        "or" to TokenType.OR,
+        "print" to TokenType.PRINT,
+        "return" to TokenType.RETURN,
+        "super" to TokenType.SUPER,
+        "this" to TokenType.THIS,
+        "true" to TokenType.TRUE,
+        "var" to TokenType.VAR,
+        "while" to TokenType.WHILE
+    )
+
     private val tokenMap = mapOf(
         '(' to TokenType.LEFT_PAREN,
         ')' to TokenType.RIGHT_PAREN,
@@ -44,7 +63,7 @@ class Lexer(private val source: String) {
             when {
                 currentChar == '\n' -> consumeNewline()
                 currentChar.isWhitespace() -> consumeWhitespace()
-                currentChar.isLetterOrUnderscore() -> tokenizeIdentifier()
+                currentChar.isLetterOrUnderscore() -> tokenizeIdentifierOrKeyword()
                 currentChar == '"' -> tokenizeString()
                 currentChar.isDigit() -> tokenizeNumber()
                 isStartOfMultiCharToken(currentChar) -> tokenizeMultiCharToken()
@@ -175,14 +194,15 @@ class Lexer(private val source: String) {
         currentColumn++
     }
 
-    private fun tokenizeIdentifier() {
+    private fun tokenizeIdentifierOrKeyword() {
         val start = currentIndex
         while (currentIndex < source.length && (source[currentIndex].isLetterOrDigit() || source[currentIndex] == '_')) {
             currentIndex++
             currentColumn++
         }
-        val identifier = source.substring(start, currentIndex)
-        tokens.add(Token(TokenType.IDENTIFIER, identifier, currentLine, currentColumn))
+        val text = source.substring(start, currentIndex)
+        val tokenType = keywords[text] ?: TokenType.IDENTIFIER
+        tokens.add(Token(tokenType, text, currentLine, currentColumn))
     }
 
     private fun Char.isLetterOrUnderscore(): Boolean {
