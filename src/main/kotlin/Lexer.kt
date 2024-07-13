@@ -31,7 +31,8 @@ class Lexer(private val source: String) {
         "==" to TokenType.EQUAL_EQUAL,
         "!=" to TokenType.BANG_EQUAL,
         ">=" to TokenType.GREATER_EQUAL,
-        "<=" to TokenType.LESS_EQUAL
+        "<=" to TokenType.LESS_EQUAL,
+        "//" to TokenType.COMMENT
     )
 
     init {
@@ -60,8 +61,8 @@ class Lexer(private val source: String) {
                 }
 
                 tokenMap.containsKey(currentChar) -> {
-                    val tokenType = tokenMap[currentChar]!!
-                    tokens.add(Token(tokenType, currentChar.toString(), currentLine, currentColumn))
+                    val token = createToken(currentChar.toString())
+                    tokens.add(token)
                     currentIndex++
                     currentColumn++
                 }
@@ -88,9 +89,34 @@ class Lexer(private val source: String) {
         val nextChar = source[currentIndex + 1]
         val multiCharToken = "$currentChar$nextChar"
         val tokenType = multiCharTokenMap[multiCharToken]!!
-        tokens.add(Token(tokenType, multiCharToken, currentLine, currentColumn))
-        currentIndex += 2
-        currentColumn += 2
+
+        if (tokenType == TokenType.COMMENT) {
+            skipComment()
+        } else {
+            tokens.add(Token(tokenType, multiCharToken, currentLine, currentColumn))
+            currentIndex += 2
+            currentColumn += 2
+        }
+    }
+
+    private fun skipComment() {
+        // Skip until end of line or end of file
+        while (currentIndex < source.length && source[currentIndex] != '\n') {
+            currentIndex++
+        }
+        // Increment line count
+        currentLine++
+        // Reset column count
+        currentColumn = 1
+        // Move past the newline character
+        if (currentIndex < source.length && source[currentIndex] == '\n') {
+            currentIndex++
+        }
+    }
+
+    private fun createToken(char: String): Token {
+        val tokenType = tokenMap[char[0]]!!
+        return Token(tokenType, char, currentLine, currentColumn)
     }
 
     private fun reportError(currentChar: Char) {

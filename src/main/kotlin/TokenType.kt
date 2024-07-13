@@ -26,8 +26,8 @@ enum class TokenType {
     BANG_EQUAL,
     GREATER_EQUAL,
     LESS_EQUAL,
-    ARROW,
-
+    COMMENT,
+    
     // Keywords
     EOF,
 }
