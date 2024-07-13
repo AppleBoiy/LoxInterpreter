@@ -1,3 +1,6 @@
+import java.io.File
+import kotlin.system.exitProcess
+
 class Lexer(private val source: String) {
     private val tokens: MutableList<Token> = mutableListOf()
     private var currentIndex: Int = 0
@@ -56,6 +59,10 @@ class Lexer(private val source: String) {
                     currentColumn++
                 }
 
+                currentChar == '"' -> {
+                    tokenizeString()
+                }
+
                 isStartOfMultiCharToken(currentChar) -> {
                     tokenizeMultiCharToken()
                 }
@@ -99,6 +106,33 @@ class Lexer(private val source: String) {
         }
     }
 
+    private fun tokenizeString() {
+        val startLine = currentLine
+        val startColumn = currentColumn
+        currentIndex++ // Move past the opening double quote
+        currentColumn++
+
+        val sb = StringBuilder()
+        while (currentIndex < source.length && source[currentIndex] != '"') {
+            if (source[currentIndex] == '\n') {
+                reportError('\"', startLine, startColumn)
+                return
+            }
+            sb.append(source[currentIndex])
+            currentIndex++
+            currentColumn++
+        }
+
+        if (currentIndex >= source.length) {
+            reportError('\"', startLine, startColumn)
+        } else {
+            // Consume closing quote
+            currentIndex++
+            currentColumn++
+            tokens.add(Token(TokenType.STRING, sb.toString(), startLine, startColumn))
+        }
+    }
+
     private fun skipComment() {
         // Skip until end of line or end of file
         while (currentIndex < source.length && source[currentIndex] != '\n') {
@@ -119,8 +153,12 @@ class Lexer(private val source: String) {
         return Token(tokenType, char, currentLine, currentColumn)
     }
 
-    private fun reportError(currentChar: Char) {
-        System.err.println("[line $currentLine] Error: Unexpected character: $currentChar")
+    private fun reportError(currentChar: Char, line: Int = currentLine, column: Int = currentColumn) {
+        if (currentChar == '\"') {
+            System.err.println("[line $line] Error: Unterminated string.")
+        } else {
+            System.err.println("[line $line] Error: Unexpected character: $currentChar")
+        }
         errorOccurred = true
         currentIndex++
         currentColumn++
@@ -132,5 +170,38 @@ class Lexer(private val source: String) {
 
     fun hasError(): Boolean {
         return errorOccurred
+    }
+}
+
+fun main(args: Array<String>) {
+    if (args.size != 2) {
+        println("Usage: ${args[0]} <source_file>")
+        exitProcess(1)
+    }
+
+    val command = args[0]
+    val filename = args[1]
+
+    if (command != "tokenize") {
+        println("Unknown command: $command")
+        exitProcess(1)
+    }
+
+    val source = File(filename).readText()
+    val lexer = Lexer(source)
+    val tokens = lexer.getTokens()
+    val hasError = lexer.hasError()
+
+    tokens.forEach {
+        when {
+            it.value != null -> println("${it.type} ${it.value} ${it.value}")
+            else -> println("${it.type} null null")
+        }
+    }
+
+    if (hasError) {
+        exitProcess(65)
+    } else {
+        exitProcess(0)
     }
 }

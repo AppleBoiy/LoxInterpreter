@@ -27,6 +27,9 @@ enum class TokenType {
     GREATER_EQUAL,
     LESS_EQUAL,
     COMMENT,
+
+    // Literals
+    STRING,
     
     // Keywords
     EOF,
