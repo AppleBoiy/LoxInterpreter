@@ -7,7 +7,8 @@ class Lexer(private val source: String) {
             when (val currentChar = source[currentIndex]) {
                 '(' -> tokens.add(Token(TokenType.LEFT_PAREN, "("))
                 ')' -> tokens.add(Token(TokenType.RIGHT_PAREN, ")"))
-                // Add more cases for other tokens...
+                '{' -> tokens.add(Token(TokenType.LEFT_BRACE, "{"))
+                '}' -> tokens.add(Token(TokenType.RIGHT_BRACE, "}"))
                 else -> {
                     // Skip whitespace
                     if (currentChar.isWhitespace()) {
