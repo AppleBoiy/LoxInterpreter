@@ -6,13 +6,10 @@ class Lexer(private val source: String) {
     private var errorOccurred: Boolean = false
 
     private val tokenMap = mapOf(
-        // Parentheses and braces
         '(' to TokenType.LEFT_PAREN,
         ')' to TokenType.RIGHT_PAREN,
         '{' to TokenType.LEFT_BRACE,
         '}' to TokenType.RIGHT_BRACE,
-
-        // Single-character tokens
         '*' to TokenType.STAR,
         '.' to TokenType.DOT,
         ',' to TokenType.COMMA,
@@ -45,40 +42,52 @@ class Lexer(private val source: String) {
             val currentChar = source[currentIndex]
 
             when {
-                currentChar == '\n' -> {
-                    currentLine++
-                    currentColumn = 1
-                    currentIndex++
-                }
-
-                currentChar.isWhitespace() -> {
-                    currentIndex++
-                    currentColumn++
-                }
-
-                currentChar == '"' -> {
-                    tokenizeString()
-                }
-
-                currentChar.isDigit() -> {
-                    tokenizeNumber()
-                }
-
-                isStartOfMultiCharToken(currentChar) -> {
-                    tokenizeMultiCharToken()
-                }
-
-                tokenMap.containsKey(currentChar) -> {
-                    val token = createToken(currentChar.toString())
-                    tokens.add(token)
-                    currentIndex++
-                    currentColumn++
-                }
-
-                else -> {
-                    reportError(currentChar)
-                }
+                currentChar == '\n' -> consumeNewline()
+                currentChar.isWhitespace() -> consumeWhitespace()
+                currentChar == '"' -> tokenizeString()
+                currentChar.isDigit() -> tokenizeNumber()
+                isStartOfMultiCharToken(currentChar) -> tokenizeMultiCharToken()
+                tokenMap.containsKey(currentChar) -> tokenizeSingleCharToken(currentChar)
+                else -> reportError(currentChar)
             }
+        }
+    }
+
+    private fun consumeNewline() {
+        currentLine++
+        currentColumn = 1
+        currentIndex++
+    }
+
+    private fun consumeWhitespace() {
+        currentIndex++
+        currentColumn++
+    }
+
+    private fun tokenizeString() {
+        val startLine = currentLine
+        val startColumn = currentColumn
+        currentIndex++ // Move past the opening double quote
+        currentColumn++
+
+        val sb = StringBuilder()
+        while (currentIndex < source.length && source[currentIndex] != '"') {
+            if (source[currentIndex] == '\n') {
+                reportError('\"', startLine, startColumn)
+                return
+            }
+            sb.append(source[currentIndex])
+            currentIndex++
+            currentColumn++
+        }
+
+        if (currentIndex >= source.length) {
+            reportError('\"', startLine, startColumn)
+        } else {
+            // Consume closing quote
+            currentIndex++
+            currentColumn++
+            tokens.add(Token(TokenType.STRING, sb.toString(), startLine, startColumn))
         }
     }
 
@@ -86,9 +95,8 @@ class Lexer(private val source: String) {
         val start = currentIndex
         consumeDigits()
 
-        // if there is a decimal point
+        // Decimal point handling
         if (currentIndex < source.length && source[currentIndex] == '.') {
-            // if there is a digit after the decimal point
             if (currentIndex + 1 < source.length && source[currentIndex + 1].isDigit()) {
                 currentIndex++
                 currentColumn++
@@ -99,7 +107,6 @@ class Lexer(private val source: String) {
         val number = source.substring(start, currentIndex)
         tokens.add(Token(TokenType.NUMBER, number, currentLine, currentColumn))
     }
-
 
     private fun consumeDigits() {
         while (currentIndex < source.length && source[currentIndex].isDigit()) {
@@ -133,46 +140,22 @@ class Lexer(private val source: String) {
         }
     }
 
-    private fun tokenizeString() {
-        val startLine = currentLine
-        val startColumn = currentColumn
-        currentIndex++ // Move past the opening double quote
-        currentColumn++
-
-        val sb = StringBuilder()
-        while (currentIndex < source.length && source[currentIndex] != '"') {
-            if (source[currentIndex] == '\n') {
-                reportError('\"', startLine, startColumn)
-                return
-            }
-            sb.append(source[currentIndex])
-            currentIndex++
-            currentColumn++
-        }
-
-        if (currentIndex >= source.length) {
-            reportError('\"', startLine, startColumn)
-        } else {
-            // Consume closing quote
-            currentIndex++
-            currentColumn++
-            tokens.add(Token(TokenType.STRING, sb.toString(), startLine, startColumn))
-        }
-    }
-
     private fun skipComment() {
-        // Skip until end of line or end of file
         while (currentIndex < source.length && source[currentIndex] != '\n') {
             currentIndex++
         }
-        // Increment line count
-        currentLine++
-        // Reset column count
-        currentColumn = 1
-        // Move past the newline character
         if (currentIndex < source.length && source[currentIndex] == '\n') {
             currentIndex++
+            currentLine++
+            currentColumn = 1
         }
+    }
+
+    private fun tokenizeSingleCharToken(currentChar: Char) {
+        val token = createToken(currentChar.toString())
+        tokens.add(token)
+        currentIndex++
+        currentColumn++
     }
 
     private fun createToken(char: String): Token {
@@ -181,11 +164,11 @@ class Lexer(private val source: String) {
     }
 
     private fun reportError(currentChar: Char, line: Int = currentLine, column: Int = currentColumn) {
-        if (currentChar == '\"') {
-            System.err.println("[line $line] Error: Unterminated string.")
-        } else {
-            System.err.println("[line $line] Error: Unexpected character: $currentChar")
+        val errorMessage = when (currentChar) {
+            '\"' -> "[line $line] Error: Unterminated string."
+            else -> "[line $line] Error: Unexpected character: $currentChar"
         }
+        System.err.println(errorMessage)
         errorOccurred = true
         currentIndex++
         currentColumn++
