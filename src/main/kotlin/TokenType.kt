@@ -31,8 +31,11 @@ enum class TokenType {
     // Literals
     STRING,
 
+    // Numbers
     NUMBER,
-    
+
     // Keywords
     EOF,
+
+    IDENTIFIER
 }

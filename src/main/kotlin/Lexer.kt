@@ -44,6 +44,7 @@ class Lexer(private val source: String) {
             when {
                 currentChar == '\n' -> consumeNewline()
                 currentChar.isWhitespace() -> consumeWhitespace()
+                currentChar.isLetterOrUnderscore() -> tokenizeIdentifier()
                 currentChar == '"' -> tokenizeString()
                 currentChar.isDigit() -> tokenizeNumber()
                 isStartOfMultiCharToken(currentChar) -> tokenizeMultiCharToken()
@@ -172,6 +173,20 @@ class Lexer(private val source: String) {
         errorOccurred = true
         currentIndex++
         currentColumn++
+    }
+
+    private fun tokenizeIdentifier() {
+        val start = currentIndex
+        while (currentIndex < source.length && (source[currentIndex].isLetterOrDigit() || source[currentIndex] == '_')) {
+            currentIndex++
+            currentColumn++
+        }
+        val identifier = source.substring(start, currentIndex)
+        tokens.add(Token(TokenType.IDENTIFIER, identifier, currentLine, currentColumn))
+    }
+
+    private fun Char.isLetterOrUnderscore(): Boolean {
+        return this.isLetter() || this == '_'
     }
 
     fun getTokens(): List<Token> {
