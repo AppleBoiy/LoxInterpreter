@@ -27,15 +27,12 @@ fun main(args: Array<String>) {
         }
 
         "parse" -> {
-
             val parser = Parser(tokens)
-
             val astPrinter = AstPrinter()
             astPrinter.checkParenthesesBalance(source)
-
             val expression = parser.parse()
-
-            println(astPrinter.print(expression))
+            val output = astPrinter.print(expression)
+            println(output)
         }
 
         else -> {
