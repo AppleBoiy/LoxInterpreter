@@ -1,3 +1,5 @@
+import kotlin.system.exitProcess
+
 class Parser(private val tokens: List<Token>) {
     private var current = 0
 
@@ -79,7 +81,7 @@ class Parser(private val tokens: List<Token>) {
             return Expr.Grouping(expr)
         }
 
-        throw error(peek(), "Expect expression.")
+        exitProcess(65)
     }
 
     private fun match(vararg types: TokenType): Boolean {

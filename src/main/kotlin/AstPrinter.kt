@@ -1,6 +1,14 @@
+import kotlin.system.exitProcess
+
 class AstPrinter : ExprVisitor<String> {
+    private var errorState: Boolean = false
+
     fun print(expr: Expr): String {
         return expr.accept(this)
+    }
+
+    fun hasError(): Boolean {
+        return errorState
     }
 
     override fun visitBinaryExpr(expr: Expr.Binary): String {
@@ -67,7 +75,26 @@ class AstPrinter : ExprVisitor<String> {
     private fun String.isNil(): Boolean {
         return this == "nil"
     }
+
+    fun checkParenthesesBalance(source: String) {
+        var openParenCount = 0
+        var closeParenCount = 0
+
+        for (char in source) {
+            when (char) {
+                '(' -> openParenCount++
+                ')' -> closeParenCount++
+            }
+        }
+
+        if (openParenCount != closeParenCount) {
+            errorState = true
+            System.err.println("Error: Unbalanced parentheses")
+            exitProcess(65)
+        }
+    }
 }
+
 
 fun Expr.accept(visitor: ExprVisitor<String>): String {
     return when (this) {
