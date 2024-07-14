@@ -28,7 +28,7 @@ class AstPrinter : ExprVisitor<String> {
                         }
                     }
 
-                    else -> "\"$lexeme\"" // Default to treating as string if not numeric
+                    else -> lexeme.toString()
                 }
             }
 
