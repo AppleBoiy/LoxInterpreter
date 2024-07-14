@@ -29,6 +29,7 @@ fun main(args: Array<String>) {
         "parse" -> {
             val parser = Parser(tokens)
             val expression = parser.parse()
+
             val astPrinter = AstPrinter()
             val ast = astPrinter.print(expression)
             println(ast)

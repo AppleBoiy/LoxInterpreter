@@ -11,11 +11,29 @@ class AstPrinter : ExprVisitor<String> {
     }
 
     override fun visitBinaryExpr(expr: Expr.Binary): String {
-        return parenthesize(expr.operator.lexeme.toString(), expr.left, expr.right)
+        return parenthesize(expr.operator.lexeme, expr.left, expr.right)
     }
 
     override fun visitLiteralExpr(expr: Expr.Literal): String {
-        return expr.value?.toString() ?: "nil"
+        return when (val lexeme = expr.value) {
+            is Boolean -> lexeme.toString()
+            is String -> {
+                val value = lexeme.toDoubleOrNull()
+                when {
+                    value != null -> {
+                        if (value.isInt()) {
+                            "${value.toInt()}.0"
+                        } else {
+                            value.toString()
+                        }
+                    }
+
+                    else -> "\"$lexeme\"" // Default to treating as string if not numeric
+                }
+            }
+
+            else -> "nil"
+        }
     }
 
     override fun visitGroupingExpr(expr: Expr.Grouping): String {
@@ -23,7 +41,7 @@ class AstPrinter : ExprVisitor<String> {
     }
 
     override fun visitUnaryExpr(expr: Expr.Unary): String {
-        return parenthesize(expr.operator.lexeme.toString(), expr.right)
+        return parenthesize(expr.operator.lexeme, expr.right)
     }
 
     private fun parenthesize(name: String, vararg exprs: Expr): String {
@@ -35,6 +53,10 @@ class AstPrinter : ExprVisitor<String> {
         }
         builder.append(")")
         return builder.toString()
+    }
+
+    private fun Double.isInt(): Boolean {
+        return this % 1 == 0.0
     }
 }
 
