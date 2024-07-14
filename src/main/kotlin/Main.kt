@@ -10,11 +10,12 @@ fun main(args: Array<String>) {
     val command = args[0]
     val filename = args[1]
 
+    val source = File(filename).readText()
+    val lexer = Lexer(source)
+    val tokens = lexer.getTokens()
+
     when (command) {
         "tokenize" -> {
-            val source = File(filename).readText()
-            val lexer = Lexer(source)
-            val tokens = lexer.getTokens()
             val hasError = lexer.hasError()
             tokens.forEach { println(it) }
 
@@ -23,6 +24,14 @@ fun main(args: Array<String>) {
             } else {
                 exitProcess(0)
             }
+        }
+
+        "parse" -> {
+            val parser = Parser(tokens)
+            val expression = parser.parse()
+            val astPrinter = AstPrinter()
+            val ast = astPrinter.print(expression)
+            println(ast)
         }
 
         else -> {

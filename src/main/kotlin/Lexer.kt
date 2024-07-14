@@ -123,7 +123,6 @@ class Lexer(private val source: String) {
                 consumeDigits()
             }
         }
-
         val number = source.substring(start, currentIndex)
         tokens.add(Token(TokenType.NUMBER, number, currentLine, currentColumn))
     }
