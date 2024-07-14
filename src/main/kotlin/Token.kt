@@ -12,4 +12,11 @@ data class Token(
     }
 
     fun isEndOfFile(): Boolean = type == TokenType.EOF
+
+    fun isOperator(): Boolean {
+        return when (type) {
+            TokenType.PLUS, TokenType.MINUS, TokenType.STAR, TokenType.SLASH -> true
+            else -> false
+        }
+    }
 }

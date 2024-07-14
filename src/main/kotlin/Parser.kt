@@ -75,14 +75,23 @@ class Parser(private val tokens: List<Token>) {
         if (match(TokenType.NIL)) return Expr.Literal(null)
         if (match(TokenType.NUMBER)) return Expr.Literal(previous().lexeme)
         if (match(TokenType.STRING)) return Expr.Literal(previous().lexeme)
+
         if (match(TokenType.LEFT_PAREN)) {
             val expr = expression()
             consume(TokenType.RIGHT_PAREN, "Expect ')' after expression.")
             return Expr.Grouping(expr)
         }
+        // Unexpected token or syntax error handling
 
-        exitProcess(65)
+        // expect expression before ')'
+        if (match(TokenType.RIGHT_PAREN)) {
+            // if previous token is
+            if (previous().isOperator())
+                throw error(previous(), "Expect expression.")
+        }
+        throw error(peek(), "Unexpected token '${peek().lexeme}'")
     }
+
 
     private fun match(vararg types: TokenType): Boolean {
         for (type in types) {
@@ -122,8 +131,10 @@ class Parser(private val tokens: List<Token>) {
     }
 
     private fun error(token: Token, message: String): ParseError {
-        // Implement error handling
-        return ParseError(message)
+        // Print error message to stderr
+        System.err.println("[line ${token.line}] Error at '${token.lexeme}': $message")
+        // Exit with code 65
+        exitProcess(65)
     }
 
     private class ParseError(message: String) : RuntimeException(message)
