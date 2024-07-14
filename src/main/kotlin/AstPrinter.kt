@@ -1,10 +1,3 @@
-interface ExprVisitor<R> {
-    fun visitBinaryExpr(expr: Expr.Binary): R
-    fun visitLiteralExpr(expr: Expr.Literal): R
-    fun visitGroupingExpr(expr: Expr.Grouping): R
-    fun visitUnaryExpr(expr: Expr.Unary): R
-}
-
 class AstPrinter : ExprVisitor<String> {
     fun print(expr: Expr): String {
         return expr.accept(this)
@@ -15,20 +8,20 @@ class AstPrinter : ExprVisitor<String> {
     }
 
     override fun visitLiteralExpr(expr: Expr.Literal): String {
-        return when (val lexeme = expr.value) {
-            is Boolean -> lexeme.toString()
+        return when (val value = expr.value) {
+            is Boolean -> value.toString()
             is String -> {
-                val value = lexeme.toDoubleOrNull()
-                when {
-                    value != null -> {
-                        if (value.isInt()) {
-                            "${value.toInt()}.0"
-                        } else {
-                            value.toString()
-                        }
+                if (value.isNumeric()) {
+                    val numericValue = value.toDouble()
+                    if (numericValue.isInt()) {
+                        "${numericValue.toInt()}.0"
+                    } else {
+                        numericValue.toString()
                     }
-
-                    else -> lexeme.toString()
+                } else if (value.isString()) {
+                    value.substring(1, value.length - 1)
+                } else {
+                    value // Assuming other literals like boolean or nil are already handled
                 }
             }
 
@@ -57,6 +50,22 @@ class AstPrinter : ExprVisitor<String> {
 
     private fun Double.isInt(): Boolean {
         return this % 1 == 0.0
+    }
+
+    private fun String.isString(): Boolean {
+        return this.startsWith("\"") && this.endsWith("\"")
+    }
+
+    private fun String.isNumeric(): Boolean {
+        return this.toDoubleOrNull() != null
+    }
+
+    private fun String.isBoolean(): Boolean {
+        return this == "true" || this == "false"
+    }
+
+    private fun String.isNil(): Boolean {
+        return this == "nil"
     }
 }
 

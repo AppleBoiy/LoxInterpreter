@@ -107,7 +107,7 @@ class Lexer(private val source: String) {
             // Consume closing quote
             currentIndex++
             currentColumn++
-            tokens.add(Token(TokenType.STRING, sb.toString(), startLine, startColumn))
+            tokens.add(Token(TokenType.STRING, "\"$sb\"", startLine, startColumn))
         }
     }
 

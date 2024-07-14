@@ -27,12 +27,14 @@ fun main(args: Array<String>) {
         }
 
         "parse" -> {
+
             val parser = Parser(tokens)
             val expression = parser.parse()
 
-            val astPrinter = AstPrinter()
-            val ast = astPrinter.print(expression)
-            println(ast)
+            val printer = AstPrinter()
+            val astString: String = printer.print(expression)
+            println(astString)
+
         }
 
         else -> {
